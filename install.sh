@@ -37,12 +37,12 @@ VERSION=`echo ${VERSION} | awk -F "[()]" '{print $2}'`
 
 check_system(){
     if [[ "${ID}" == "centos" && ${VERSION_ID} -ge 7 ]];then
-        echo -e "${OK} ${GreenBG} 当前系统为 Centos ${VERSION_ID} ${VERSION} ${Font} "
+        echo -e "${OK} ${GreenBG} The current system is Centos ${VERSION_ID} ${VERSION} ${Font} "
         INS="yum"
         echo -e "${OK} ${GreenBG} SElinux 设置中，请耐心等待，不要进行其他操作${Font} "
         setsebool -P httpd_can_network_connect 1
-        echo -e "${OK} ${GreenBG} SElinux 设置完成 ${Font} "
-        ## Centos 也可以通过添加 epel 仓库来安装，目前不做改动
+        echo -e "${OK} ${GreenBG} SElinux 设置Finish ${Font} "
+        ## Centos 也可以通过添加 epel 仓库来Install，目前不做改动
         cat>/etc/yum.repos.d/nginx.repo<<EOF
 [nginx]
 name=nginx repo
@@ -50,9 +50,9 @@ baseurl=http://nginx.org/packages/mainline/centos/7/\$basearch/
 gpgcheck=0
 enabled=1
 EOF
-        echo -e "${OK} ${GreenBG} Nginx 源 安装完成 ${Font}" 
+        echo -e "${OK} ${GreenBG} Nginx 源 InstallFinish ${Font}" 
     elif [[ "${ID}" == "debian" && ${VERSION_ID} -ge 8 ]];then
-        echo -e "${OK} ${GreenBG} 当前系统为 Debian ${VERSION_ID} ${VERSION} ${Font} "
+        echo -e "${OK} ${GreenBG} The current system is Debian ${VERSION_ID} ${VERSION} ${Font} "
         INS="apt"
         ## 添加 Nginx apt源
         if [ ! -f nginx_signing.key ];then
@@ -62,7 +62,7 @@ EOF
         apt-key add nginx_signing.key
         fi
     elif [[ "${ID}" == "ubuntu" && `echo "${VERSION_ID}" | cut -d '.' -f1` -ge 16 ]];then
-        echo -e "${OK} ${GreenBG} 当前系统为 Ubuntu ${VERSION_ID} ${VERSION_CODENAME} ${Font} "
+        echo -e "${OK} ${GreenBG} The current system is Ubuntu ${VERSION_ID} ${VERSION_CODENAME} ${Font} "
         INS="apt"
         ## 添加 Nginx apt源
         if [ ! -f nginx_signing.key ];then
@@ -72,26 +72,26 @@ EOF
         apt-key add nginx_signing.key
         fi
     else
-        echo -e "${Error} ${RedBG} 当前系统为 ${ID} ${VERSION_ID} 不在支持的系统列表内，安装中断 ${Font} "
+        echo -e "${Error} ${RedBG} The current system is ${ID} ${VERSION_ID} Not in the list of supported systems，Installation interrupted ${Font} "
         exit 1
     fi
 
 }
 is_root(){
     if [ `id -u` == 0 ]
-        then echo -e "${OK} ${GreenBG} 当前用户是root用户，进入安装流程 ${Font} "
+        then echo -e "${OK} ${GreenBG} The current user is the root user，Enter the installation process ${Font} "
         sleep 3
     else
-        echo -e "${Error} ${RedBG} 当前用户不是root用户，请切换到root用户后重新执行脚本 ${Font}" 
+        echo -e "${Error} ${RedBG} The current user is not the root user, please switch to the root user and execute the script again ${Font}" 
         exit 1
     fi
 }
 judge(){
     if [[ $? -eq 0 ]];then
-        echo -e "${OK} ${GreenBG} $1 完成 ${Font}"
+        echo -e "${OK} ${GreenBG} $1 Finish ${Font}"
         sleep 1
     else
-        echo -e "${Error} ${RedBG} $1 失败${Font}"
+        echo -e "${Error} ${RedBG} $1 Fail${Font}"
         exit 1
     fi
 }
@@ -103,22 +103,22 @@ dependency_install(){
     else
         ${INS} install cron
     fi
-    judge "安装 crontab"
+    judge "Install crontab"
 
     # 新版的IP判定不需要使用net-tools
     # ${INS} install net-tools -y
-    # judge "安装 net-tools"
+    # judge "Install net-tools"
 
     ${INS} install bc -y
-    judge "安装 bc"
+    judge "Install bc"
 
     ${INS} install unzip -y
-    judge "安装 unzip"
+    judge "Install unzip"
 }
 port_alterid_set(){
-    stty erase '^H' && read -p "请输入连接端口（default:443）:" port
+    stty erase '^H' && read -p "Please enter the connection port（default:443）:" port
     [[ -z ${port} ]] && port="443"
-    stty erase '^H' && read -p "请输入alterID（default:64）:" alterID
+    stty erase '^H' && read -p "Please enter alterID（default:64）:" alterID
     [[ -z ${alterID} ]] && alterID="64"
 }
 modify_port_UUID(){
@@ -142,7 +142,7 @@ modify_nginx(){
     sed -i "27i \\\tproxy_intercept_errors on;"  /etc/nginx/nginx.conf
 }
 web_camouflage(){
-    ##请注意 这里和LNMP脚本的默认路径冲突，千万不要在安装了LNMP的环境下使用本脚本，否则后果自负
+    ##请注意 这里和LNMP脚本的默认路径冲突，千万不要在Install了LNMP的环境下使用本脚本，否则后果自负
     rm -rf /home/webroot && mkdir -p /home/webroot && mkdir -p /home/webtemp && mkdir -p /home/webroot/jsproxy
     pathing=$[$[$RANDOM % 5] + 1] 
     wget https://github.com/breakwa2333/v2ray-onekey/blob/master/template/$pathing.zip?raw=true -O /home/webtemp/$pathing.zip
@@ -159,24 +159,24 @@ v2ray_install(){
     
     if [[ -f install-release.sh ]];then
         bash install-release.sh --version v4.25.1
-        judge "安装 V2ray"
+        judge "Install V2ray"
     else
-        echo -e "${Error} ${RedBG} V2ray 安装文件下载失败，请检查下载地址是否可用 ${Font}"
+        echo -e "${Error} ${RedBG} V2ray Install file download Fail, please check if the download address is available ${Font}"
         exit 4
     fi
 }
 nginx_install(){
     ${INS} install nginx -y
     if [[ -d /etc/nginx ]];then
-        echo -e "${OK} ${GreenBG} nginx 安装完成 ${Font}"
+        echo -e "${OK} ${GreenBG} nginx InstallFinish ${Font}"
         sleep 2
     else
-        echo -e "${Error} ${RedBG} nginx 安装失败 ${Font}"
+        echo -e "${Error} ${RedBG} nginx InstallFail ${Font}"
         exit 5
     fi
     if [[ ! -f /etc/nginx/nginx.conf.bak ]];then
         cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.bak
-        echo -e "${OK} ${GreenBG} nginx 初始配置备份完成 ${Font}"
+        echo -e "${OK} ${GreenBG} nginx Initial configuration backup Finish ${Font}"
         sleep 1
     fi
 }
@@ -186,32 +186,32 @@ ssl_install(){
     else
         ${INS} install socat netcat -y
     fi
-    judge "安装 SSL 证书生成脚本依赖"
+    judge "Install SSL Certificate Generation"
 
     curl  https://get.acme.sh | sh
-    judge "安装 SSL 证书生成脚本"
+    judge "Install SSL Certificate Generation"
 
 }
 domain_check(){
-    stty erase '^H' && read -p "请输入你的域名信息(eg:www.v2ray.com):" domain
-    echo -e "${OK} ${GreenBG} 正在获取 公网ip 信息，请耐心等待 ${Font}"
+    stty erase '^H' && read -p "Please enter Domain (eg:www.v2ray.com):" domain
+    echo -e "${OK} ${GreenBG} Getting public IP information, please wait patiently ${Font}"
     domain_ip=`ping ${domain} -c 1 | sed '1{s/[^(]*(//;s/).*//;q}'`
     local_ip=`curl -4 ip.sb`
-    echo -e "域名dns解析IP：${domain_ip}"
-    echo -e "本机IP: ${local_ip}"
+    echo -e "Domain name dns resolution IP：${domain_ip}"
+    echo -e "Public IP : ${local_ip}"
     sleep 2
     if [[ $(echo ${local_ip}|tr '.' '+'|bc) -eq $(echo ${domain_ip}|tr '.' '+'|bc) ]];then
-        echo -e "${OK} ${GreenBG} 域名dns解析IP  与 本机IP 匹配 ${Font}"
+        echo -e "${OK} ${GreenBG} The domain name dns resolution IP match the IP of the machine ${Font}"
         sleep 2
     else
-        echo -e "${Error} ${RedBG} 域名dns解析IP 与 本机IP 不匹配 是否继续安装？（y/n）${Font}" && read install
+        echo -e "${Error} ${RedBG} The domain name dns resolution IP does not match the IP of the machine. Do you want to continue the installation?（y/n）${Font}" && read install
         case $install in
         [yY][eE][sS]|[yY])
-            echo -e "${GreenBG} 继续安装 ${Font}" 
+            echo -e "${GreenBG} Continue Install ${Font}" 
             sleep 2
             ;;
         *)
-            echo -e "${RedBG} 安装终止 ${Font}" 
+            echo -e "${RedBG} Install Done ${Font}" 
             exit 2
             ;;
         esac
@@ -220,15 +220,15 @@ domain_check(){
 
 port_exist_check(){
     if [[ 0 -eq `lsof -i:"$1" | wc -l` ]];then
-        echo -e "${OK} ${GreenBG} $1 端口未被占用 ${Font}"
+        echo -e "${OK} ${GreenBG} $1 The port is inactive. ${Font}"
         sleep 1
     else
-        echo -e "${Error} ${RedBG} 检测到 $1 端口被占用，以下为 $1 端口占用信息 ${Font}"
+        echo -e "${Error} ${RedBG}It is detected that port $1 is occupied. The following is the occupancy information for port $1 ${Font}"
         lsof -i:"$1"
-        echo -e "${OK} ${GreenBG} 5s 后将尝试自动 kill 占用进程 ${Font}"
+        echo -e "${OK} ${GreenBG} After 5s, it will try to kill the occupied process automatically. ${Font}"
         sleep 5
         lsof -i:"$1" | awk '{print $2}'| grep -v "PID" | xargs kill -9
-        echo -e "${OK} ${GreenBG} kill 完成 ${Font}"
+        echo -e "${OK} ${GreenBG} kill Finish ${Font}"
         sleep 1
     fi
 }
@@ -236,15 +236,15 @@ port_exist_check(){
 acme(){
     ~/.acme.sh/acme.sh --issue -d ${domain} --standalone -k ec-384 --force
     if [[ $? -eq 0 ]];then
-        echo -e "${OK} ${GreenBG} SSL 证书生成成功 ${Font}"
+        echo -e "${OK} ${GreenBG} SSL Certificate generated successfully ${Font}"
         sleep 2
         ~/.acme.sh/acme.sh --installcert -d ${domain} --fullchainpath /etc/v2ray/v2ray.crt --keypath /etc/v2ray/v2ray.key --ecc
         if [[ $? -eq 0 ]];then
-        echo -e "${OK} ${GreenBG} 证书配置成功 ${Font}"
+        echo -e "${OK} ${GreenBG} Certificate configuration is successful ${Font}"
         sleep 2
         fi
     else
-        echo -e "${Error} ${RedBG} SSL 证书生成失败 ${Font}"
+        echo -e "${Error} ${RedBG} SSL Certificate Generation Fail ${Font}"
         exit 1
     fi
 }
@@ -252,7 +252,7 @@ v2ray_conf_add(){
     mkdir -p /etc/v2ray && cd /etc/v2ray
     wget https://raw.githubusercontent.com/breakwa2333/v2ray-onekey/master/tls/config.json -O config.json
     modify_port_UUID
-    judge "V2ray 配置修改"
+    judge "V2ray Configuration modification"
 }
 nginx_conf_add(){
     touch ${nginx_conf_dir}/v2ray.conf
@@ -287,12 +287,12 @@ nginx_conf_add(){
 EOF
 
 modify_nginx
-judge "Nginx 配置修改"
+judge "Nginx Configuration modification"
 
 }
 
 start_process_systemd(){
-    ### nginx服务在安装完成后会自动启动。需要通过restart或reload重新加载配置
+    ### nginx服务在InstallFinish后会自动启动。需要通过restart或reload重新加载配置
     systemctl start nginx 
     judge "Nginx 启动"
 
@@ -320,17 +320,17 @@ cron_update(){
 show_information(){
     clear
 
-    echo -e "${OK} ${Green} V2ray+ws+tls 安装成功 "
-    echo -e "${Red} V2ray 配置信息 ${Font}"
-    echo -e "${Red} 地址（address）:${Font} ${domain} "
-    echo -e "${Red} 端口（port）：${Font} ${port} "
-    echo -e "${Red} 用户id（UUID）：${Font} ${UUID}"
-    echo -e "${Red} 额外id（alterId）：${Font} ${alterID}"
-    echo -e "${Red} 加密方式（security）：${Font} 自适应 "
-    echo -e "${Red} 传输协议（network）：${Font} ws "
-    echo -e "${Red} 伪装类型（type）：${Font} none "
-    echo -e "${Red} 路径（不要落下/）：${Font} /${camouflage}/ "
-    echo -e "${Red} 底层传输安全：${Font} tls "
+    echo -e "${OK} ${Green} V2ray+ws+tls Installsuccess  "
+    echo -e "${Red} V2ray configuration information ${Font}"
+    echo -e "${Red} Address : ${Font} ${domain} "
+    echo -e "${Red} Port：${Font} ${port} "
+    echo -e "${Red} Userid（UUID）：${Font} ${UUID}"
+    echo -e "${Red} AlterId：${Font} ${alterID}"
+    echo -e "${Red} Encryption（security）：${Font} adaptive "
+    echo -e "${Red} Transfer Protocol（network）：${Font} ws "
+    echo -e "${Red} Camouflage type：${Font} none "
+    echo -e "${Red} Path (don't fall/)：${Font} /${camouflage}/ "
+    echo -e "${Red} Underlying transport security：${Font} tls "
 
     
 
@@ -354,7 +354,7 @@ main(){
     nginx_conf_add
     web_camouflage
 
-    #改变证书安装位置，防止端口冲突关闭相关应用
+    #改变证书Install位置，防止端口冲突关闭相关应用
     systemctl stop nginx
     systemctl enable v2ray.service
     systemctl stop v2ray
